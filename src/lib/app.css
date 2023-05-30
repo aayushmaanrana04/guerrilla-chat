@@ -13,12 +13,21 @@ body {
 }
 
 .loginwithgoogle {
+	display: flex;
+	gap: 1em;
 	font-size: 20px;
 	padding: 1em;
 	border-radius: 5px;
 	outline: none;
 	border: none;
+	align-items: center;
 }
+
+.googlelogo {
+	height: 2em;
+	/* color: #4081ec; */
+}
+
 .loginwithgoogle:hover {
 	background: #c1c1c1;
 }
@@ -44,7 +53,6 @@ body {
 	gap: 5px;
 	overflow-y: scroll;
 	scroll-behavior: smooth;
-	
 }
 .chatbox::-webkit-scrollbar {
 	display: none;
@@ -52,7 +60,6 @@ body {
 
 .chatTextbox {
 	display: flex;
-	
 }
 
 .chatTextbox input {
@@ -125,8 +132,16 @@ body {
 
 .chatbox img {
 	border: 1px solid black;
+	/* background: white; */
 	height: min-content;
 	border-radius: 50%;
+}
+
+.av-left img {
+	background: #47a863;
+}
+.av-right img {
+	background: #007aff;
 }
 .av-right {
 	display: flex;
@@ -140,7 +155,7 @@ body {
 	margin: 0;
 }
 
-.submitbtn{
+.submitbtn {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -156,7 +171,7 @@ body {
 		min-height: 90vh;
 	}
 
-	.chatBg{
+	.chatBg {
 		width: 90vw;
 	}
 
@@ -164,7 +179,8 @@ body {
 		height: 28em;
 	}
 
-	.msg-left,.msg-right{
+	.msg-left,
+	.msg-right {
 		max-width: 8em;
 	}
 
@@ -176,11 +192,11 @@ body {
 		color: white;
 		justify-content: space-evenly;
 	}
-	.chatTextbox input{
+	.chatTextbox input {
 		/* max-width: 9em; */
 		width: 100%;
 	}
-	.chatTextbox button{
+	.chatTextbox button {
 		max-width: 20%;
 	}
 }

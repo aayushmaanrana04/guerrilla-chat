@@ -1,71 +1,44 @@
 <script>
+	import '$lib/app.css';
 	import { onMount, afterUpdate, onDestroy } from 'svelte';
-	import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+	//firebase
+	import { auth, db } from '$lib/firebase';
+	import { signOut } from 'firebase/auth';
 	import {
-		getFirestore,
 		collection,
-		getDocs,
 		addDoc,
 		query,
 		orderBy,
 		serverTimestamp,
 		onSnapshot
 	} from 'firebase/firestore';
-	import { app } from '$lib/firebase';
-	import { writable } from 'svelte/store';
-	import { goto } from '$app/navigation';
-	import '$lib/app.css';
+
+	//avatar + icons
 	import { createAvatar } from '@dicebear/core';
-	import { lorelei } from '@dicebear/collection';
+	import { micah as av_style } from '@dicebear/collection';
 	import FaSignOutAlt from 'svelte-icons/fa/FaSignOutAlt.svelte';
 	import IoMdSend from 'svelte-icons/io/IoMdSend.svelte';
-	const textMsg = writable('');
+
+	//store
+	import { emailStore, textMsg } from '../../stores/stores';
 
 	let chatbox;
 	let inputBox;
-
-	const userID = writable(null);
-	const auth = getAuth();
-	onAuthStateChanged(auth, (user) => {
-		if (user) {
-			const uid = user.email;
-			userID.set(uid);
-		} else {
-			userID.set(null);
-			// goto('/');
-		}
-	});
-
-	// const messages = writable([]);
 	let messages = [];
-	const db = getFirestore(app);
+
+	//update on change in db
 	const q = query(collection(db, 'messages'), orderBy('createdAt', 'asc'));
 
-	let unsub = onSnapshot(q, (result) => {
+	let unsubscribe = onSnapshot(q, (result) => {
 		messages = [];
 		result.forEach((doc) => {
 			messages = [...messages, doc.data()];
-			// console.log(messages);
 		});
 	});
 
+	//UI
 	onMount(() => {
 		inputBox.focus();
-	});
-
-	onMount(async () => {
-		// const resultList = await getDocs(collection(db, 'messages'));
-		try {
-			const resultList = await getDocs(
-				query(collection(db, 'messages'), orderBy('createdAt', 'asc'))
-			);
-			resultList.forEach((doc) => {
-				// messages.update((value) => [...value, doc.data()]);
-				// messages = [...messages, doc.data()];
-			});
-		} catch (e) {
-			console.log(e);
-		}
 	});
 	afterUpdate(() => {
 		scrollToBottom();
@@ -75,66 +48,55 @@
 			chatbox.scrollTop = chatbox.scrollHeight;
 		}
 	}
+
+	//functions
 	async function logout() {
-		const auth = getAuth(app);
 		signOut(auth)
 			.then(() => {
 				console.log('user signed out');
-				goto('/');
 			})
 			.catch((e) => {
 				console.log(e);
 			});
 	}
-
-	let avatar = createAvatar(lorelei, {
-		size: 30
-		// ... other options
-	}).toDataUriSync();
-
 	async function handleSubmit() {
 		if ($textMsg != '') {
 			const data = {
-				email: $userID,
+				email: $emailStore,
 				message: $textMsg,
 				createdAt: serverTimestamp()
 			};
-			const createdMessage = await addDoc(collection(db, 'messages'), data);
-			textMsg.set('');
+			await addDoc(collection(db, 'messages'), data);
+			$textMsg = '';
 		}
-		// console.log('Doc id', createdMessage.id);
 	}
-
 	function handleKeydown(e) {
 		if (e.key == 'Enter') {
 			handleSubmit();
 		}
 	}
 
+	let avatar = createAvatar(av_style, {
+		size: 30
+		// ... other options
+	}).toDataUriSync();
+
 	onDestroy(() => {
-		if (unsub) {
-			unsub();
+		if (unsubscribe) {
+			unsubscribe();
 		}
 	});
 </script>
 
-<!-- <h1>{$userID}</h1> -->
-
-<!-- {#if $userID == null}
-	<h1>could not load your messages</h1>
-{/if} -->
 <div class="chatBg">
 	<button on:click={logout} class="chatLogout">
-		<p>{$userID}</p>
+		<p>{$emailStore}</p>
 		<FaSignOutAlt /></button
 	>
 	<div class="chatbox" bind:this={chatbox}>
-		{#if $userID == null}
-			<p class="loader">Loading...</p>
-		{/if}
 		{#each messages as message}
-			<div class={$userID === message.email ? 'av-right' : 'av-left'}>
-				<div class={$userID === message.email ? 'msg-right' : 'msg-left'}>
+			<div class={$emailStore === message.email ? 'av-right' : 'av-left'}>
+				<div class={$emailStore === message.email ? 'msg-right' : 'msg-left'}>
 					<p>{message.message}</p>
 					<p class="uid">{message.email.replace('@gmail.com', '')}</p>
 				</div>
